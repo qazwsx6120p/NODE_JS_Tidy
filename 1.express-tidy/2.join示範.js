@@ -11,4 +11,5 @@ console.log(aryJoin);
 // nodejs 內建的 path 模組
 const path = require('path');
 let realPath = path.join('public', 'images', 'uploads', 'member');
+// 會自動偵測路徑的 "/" 、 "\" 方向
 console.log(realPath);

@@ -2,17 +2,27 @@ import { Link } from 'react-router-dom';
 //引入react的axios
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+//ESM 的模組管理方式(自己創建)
+import { API_URL } from '../utils/config';
+
+//------------------------------------------------------------
 
 const Stock = () => {
   // 拿到的資料為陣列
   // useState 預設值給他空陣列[]
   const [stocks, setStocks] = useState([]);
 
+  // 1.原本的網址 http://localhost:3001/stocks
+  // 2.將 http://localhost:3001 跟 /stocks 拆開
+  // 3.在.env 宣告變數 REACT_APP_API_URL=http://locallhost:3001
+  // 4.在這裡引用 process.env.REACT_APP_API_URL + '/stocks'
+  // 5.引用ESM 的模組管理方式(自己創建)API_URL (config.js檔案)
+
   useEffect(() => {
     // 設定一個async函數來接收資料
     let getStocks = async () => {
       // 取得 http://localhost:3001/stocks API
-      let response = await axios.get('http://localhost:3001/stocks');
+      let response = await axios.get(`${API_URL}/stocks`);
 
       // 將response的資料更新回stocks的狀態內
       setStocks(response.data);
