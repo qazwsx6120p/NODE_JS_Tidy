@@ -24,17 +24,27 @@ app.use(cors());
 
 let = pool = require('./utils/1.db');
 
-// -------------------------------------------------------------------------
+// ---------------------解析POST過來的body資料(會放在最上面先進行解析)---------------------
 
 // express.urlencoded()函數是Express中的內置中間件函數
+// express.urlencoded()要讓express解析body的資料(body為送過來的資料)
 // extended: false -->底層是querystring
 // extended: false -->底層是qs
 app.use(express.urlencoded({ extended: true }));
 
-// ---------------------------------stockRouter----------------------------------------
+// 要讓 express 認得 req 裡 json
+app.use(express.json());
 
+
+//================================== Router ==================================
+
+//1.stockRouter
 const stockRouter = require('./routers/1.stockRouter');
 app.use("/api/stocks",stockRouter); // <--將網址設在server Router 的網址可以刪掉
+
+//2.authRouter
+const AuthRouter = require('./routers/2.authRouter');
+app.use('/api/auth', AuthRouter);
 
 // ---------------------------------首頁----------------------------------------
 
