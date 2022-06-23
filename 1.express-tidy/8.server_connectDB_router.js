@@ -1,15 +1,14 @@
-// ---------------------------------require----------------------------------------
-// 引用express
-// 設定一個app變數來使用 express
+//==================================================================
+
+// ============== 引用express和使用router ==============
+
 const express = require('express');
 const app = express();
-
-// ==============================================
 
 // 內建套件無須 npm i
 const path = require('path');
 
-// ==============================================
+// ============== cors ==============
 
 // 只要跨來源，就會被**瀏覽器**阻擋 （事實上，請求還是發得出去，
 // 只是瀏覽器沒有得到 Access-Control-Allow-Origin 許可，
@@ -20,11 +19,13 @@ const path = require('path');
 const cors = require('cors');
 app.use(cors());
 
-// ---------------------------------createPoolRequire----------------------------------------
+// ============== createPoolRequire ==============
 
 let = pool = require('./utils/1.db');
 
-// ---------------------解析POST過來的body資料(會放在最上面先進行解析)---------------------
+//==================================================================
+
+// --------解析POST過來的body資料(會放在最上面先進行解析)--------
 
 // express.urlencoded()函數是Express中的內置中間件函數
 // express.urlencoded()要讓express解析body的資料(body為送過來的資料)
@@ -35,18 +36,17 @@ app.use(express.urlencoded({ extended: true }));
 // 要讓 express 認得 req 裡 json
 app.use(express.json());
 
-
-//================================== Router ==================================
+//======== ** Router **========
 
 //1.stockRouter
 const stockRouter = require('./routers/1.stockRouter');
-app.use("/api/stocks",stockRouter); // <--將網址設在server Router 的網址可以刪掉
+app.use('/api/stocks', stockRouter); // <--將網址設在server Router 的網址可以刪掉
 
 //2.authRouter
 const AuthRouter = require('./routers/2.authRouter');
 app.use('/api/auth', AuthRouter);
 
-// ---------------------------------首頁----------------------------------------
+// --------首頁--------
 
 // 建立網址並發出請求 http://localhost:3001/
 app.get('/', (request, response, next) => {
@@ -56,7 +56,7 @@ app.get('/', (request, response, next) => {
   response.send('首頁'); //<-- 在這回復
 });
 
-// ----------------------------------404---------------------------------------
+// --------404---------
 
 // 這個中間件在所有路由的後面
 // 會到這裡，代表客戶端打錯網址傳送給你 顯示Not Found
@@ -67,7 +67,7 @@ app.use((req, res, next) => {
   res.status(404).send('Not Found');
 });
 
-// ----------------------------------500---------------------------------------
+// --------500--------
 
 // 5xx <--自己伺服器的錯誤
 // 錯誤處理中間件: 通常也會放在所有中間件的最後
@@ -80,7 +80,7 @@ app.use((err, req, res, next) => {
   res.status(500).send('Server Error: 請洽系統管理員');
 });
 
-// ----------------------------------listen port---------------------------------------
+// --------listen port--------
 
 // 使用這個port 3001 (通常會放到最後)
 // 伺服器端為3001

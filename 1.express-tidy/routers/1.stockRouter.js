@@ -1,13 +1,17 @@
-
+//==================================================================
 const express = require('express');
 //const app = express();
 const router = express.Router();
 // router is a mini-app
 
-//-------------------------** createPoolRequire **----------------------------
+////============ createPoolRequire ============
 
 //下面會使用到 pool 所以require pool
 let pool = require('../utils/1.db');
+
+//==================================================================
+
+
 
 //-------------------------** 取得 stocks 的列表 **----------------------------
 

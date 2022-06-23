@@ -1,3 +1,5 @@
+//==================================================================
+
 // ============== 引用express和使用router ==============
 const express = require('express');
 const router = express.Router();
@@ -13,7 +15,7 @@ const pool = require('../utils/db');
 // ============== 引用密碼雜湊套件 ==============
 const bcrypt = require('bcrypt');
 
-//=============================================================================
+//==================================================================
 
 // for image upload
 // https://www.npmjs.com/package/multer
@@ -70,21 +72,28 @@ const uploader = multer({
   },
 });
 
+//=================== 後端驗證規則 ===================
+
+// 將存取規則的變數帶到，接收前端送來的資料中間件裡面
 const registerRules = [
   body('email').isEmail().withMessage('Email 欄位請填寫正確格式'),
   body('password').isLength({ min: 8 }).withMessage('密碼長度至少為8'),
   body('confirmPassword')
+    // confirmPassword 要等於 req.body 傳來的 password
     .custom((value, { req }) => {
       return value === req.body.password;
     })
+    //不然就給他客製的錯誤訊息
     .withMessage('密碼驗證不一致'),
 ];
 
-//------------------ 接收前端送來的資料 ------------------
+//=================== 接收前端送來的資料 ===================
 
+// /api/auth/register
 router.post(
   '/register',
   uploader.single('photo'),
+  // 後端驗證規則變數
   registerRules,
   async (req, res, next) => {
     // 1. req.params <-- 網址上的路由參數
@@ -94,12 +103,19 @@ router.post(
 
     // ------------------ 1.驗證資料 ------------------
 
-    // 拿到驗證結果
+    // 引用後端資料驗證套件validationResult
+    // 拿到驗證上面自訂義驗證規則的結果 
+    // const 變數 = validationResult(req) <--套件官方規定用法
     const validateResults = validationResult(req);
+    // 假如沒有錯誤，會顯示空物件
+    // 有錯誤會顯示錯誤物件
     console.log('validateResults', validateResults);
+    // 假如物件內不是空的(代表有錯誤)
+    // 使用isEmpty() 判斷是否為空
     if (!validateResults.isEmpty()) {
-      // 不是 empty --> 表示有不符合
+      // 將錯誤訊息包裝成一個陣列
       let error = validateResults.array();
+      //return 回覆給前端錯誤訊息
       return res.status(400).json({ code: 3001, error: error });
     }
 
@@ -133,7 +149,7 @@ router.post(
     // 使用者不一定有上傳圖片，所以要確認 req 是否有 file
     let photo = req.file ? '/members/' + req.file.filename : '';
 
-    // ------------------ 4.save to db ------------------
+    // ------------------ 4.存進資料庫 ------------------
 
     let [result] = await pool.execute(
       'INSERT INTO members (email, password, name, photo) VALUES (?, ?, ?, ?)',
@@ -141,7 +157,7 @@ router.post(
     );
     console.log('insert result:', result);
 
-    // ------------------ 5.response ------------------
+    // ------------------ 5.response(回覆給前端) ------------------
 
     res.json({ code: 0, result: 'OK' });
   }
