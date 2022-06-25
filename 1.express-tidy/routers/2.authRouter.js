@@ -1,18 +1,22 @@
-//==================================================================
+//=============================== Require ===================================
 
-// ============== 引用express和使用router ==============
+// ------------- 引用express和使用router -------------
+
 const express = require('express');
 const router = express.Router();
 
-// ============== 引用後端資料驗證套件 ==============
+// ------------- 引用後端資料驗證套件 -------------
+
 // 為官方規定的引用方法
 const { body, validationResult } = require('express-validator');
 
-// ============== createPoolRequire ==============
+// ------------- createPoolRequire -------------
+
 // 自己整理的資料庫模組
 const pool = require('../utils/db');
 
-// ============== 引用密碼雜湊套件 ==============
+// ------------- 引用密碼雜湊套件 -------------
+
 const bcrypt = require('bcrypt');
 
 //==================================================================
@@ -87,7 +91,7 @@ const registerRules = [
     .withMessage('密碼驗證不一致'),
 ];
 
-//=================== 接收前端送來的資料 ===================
+//=================== 註冊接收前端送來的資料 ===================
 
 // /api/auth/register
 router.post(
@@ -104,7 +108,7 @@ router.post(
     // ------------------ 1.驗證資料 ------------------
 
     // 引用後端資料驗證套件validationResult
-    // 拿到驗證上面自訂義驗證規則的結果 
+    // 拿到驗證上面自訂義驗證規則的結果
     // const 變數 = validationResult(req) <--套件官方規定用法
     const validateResults = validationResult(req);
     // 假如沒有錯誤，會顯示空物件
@@ -115,21 +119,30 @@ router.post(
     if (!validateResults.isEmpty()) {
       // 將錯誤訊息包裝成一個陣列
       let error = validateResults.array();
-      //return 回覆給前端錯誤訊息
+      // return 回覆給前端錯誤訊息
+      // code: 3001 為自訂義的錯誤代碼(用來給前端辨別是何種錯誤)
       return res.status(400).json({ code: 3001, error: error });
     }
 
     // ------------------ 2.確認 email 有沒有註冊過 ------------------
 
-    let [members] = await pool.execute(
+    // 從資料庫撈出資料
+    // 接回的資料為一個陣列，陣列的第一個值才是真正的資料
+    let [members, field] = await pool.execute(
+      // 選取id、email 從 members 資料表
       'SELECT id, email FROM members WHERE email = ?',
+      // 前端送過來的email
       [req.body.email]
     );
+    // 判斷mail有沒有註冊過 !== 0 (代表陣列長度不為0 <-- 註冊過)
     if (members.length !== 0) {
-      // 這個 email 有註冊過
-      return res
-        .status(400)
-        .json({ code: 3002, error: '這個 email 已經註冊過' });
+      // 註冊過就直接回覆給前端 400
+      return (
+        res
+          .status(400)
+          // 並傳送錯誤訊息
+          .json({ code: 3002, error: '這個 email 已經註冊過' })
+      );
       // 盡可能讓後端回覆的格式是一致的，如果無法完全一致，那至少要讓前端有判斷的依據。
       // 做專案的時候，在專案開始前，可以先討論好要回覆的錯誤格式與代碼。
     }
@@ -137,8 +150,10 @@ router.post(
     // ------------------ 3.密碼雜湊 hash ------------------
 
     // bcrypt (長度: 60), argon2 (長度: 95)
-    let hashPassword = await bcrypt.hash(req.body.password, 10);
+    let hashPassword = await bcrypt.hash(req.body.password, 10); //<--預設10
     console.log('hashPassword: ', hashPassword);
+
+    // ------------------ 3.圖片(不一定會有，看註冊是否需要上傳) ------------------
 
     // 圖片處理完成後，會被放在 req 物件裡
     console.log('req.file', req.file);
@@ -152,7 +167,9 @@ router.post(
     // ------------------ 4.存進資料庫 ------------------
 
     let [result] = await pool.execute(
+      // 存進資料庫SQL語法
       'INSERT INTO members (email, password, name, photo) VALUES (?, ?, ?, ?)',
+      // 密碼記得存雜湊過的密碼
       [req.body.email, hashPassword, req.body.name, photo]
     );
     console.log('insert result:', result);
@@ -163,8 +180,6 @@ router.post(
   }
 );
 
-// database => index
-// select *
 
 // /api/auth/login
 router.post('/login', async (req, res, next) => {

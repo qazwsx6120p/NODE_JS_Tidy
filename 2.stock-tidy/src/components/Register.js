@@ -20,17 +20,23 @@ const Register = () => {
     setMember({ ...member, [e.target.name]: e.target.value });
   }
 
+  // 抓取上傳圖片事件
+  function handlePhoto(e) {
+    // 陣列的索引0(因為只會上傳一張圖片)
+    setMember({ ...member, photo: e.target.files[0] });
+  }
+// -------------------表單送出事件-------------------
   async function handleSubmit(e) {
     // 停掉預設行為
     e.preventDefault();
     try {
       // ----------axios.get(URL, params)----------
       // 參數1:網址 (傳送給後端的網址)
-      // 參數2:網址後面?id... 
+      // 參數2:網址後面?id...
 
       // ----------axios.post(URL, data, params) ----------
       // 參數1:網址 (傳送給後端的網址)
-      // 參數2:資料  
+      // 參數2:資料
       // 參數3:網址後面?id...
 
       // ----------------方法1: 當你的表單沒有圖片的時候，可以直接傳輸 json 到後端去----------------
@@ -41,13 +47,14 @@ const Register = () => {
 
       // ----------------方法2: 如果表單有圖片，會用 FormData 的方式來上傳----------------
       let formData = new FormData();
+      // 將name跟value傳去後端
       formData.append('email', member.email);
       formData.append('name', member.name);
       formData.append('password', member.password);
       formData.append('confirmPassword', member.confirmPassword);
       formData.append('photo', member.photo);
-
-
+      
+      //送去後端
       let response = axios.post(`${API_URL}/auth/register`, formData);
       console.log(response.data);
 
@@ -129,7 +136,7 @@ const Register = () => {
           id="photo"
           name="photo"
           value={member.photo}
-          onChange={handleChange}
+          onChange={handlePhoto}
         />
       </div>
       <button
