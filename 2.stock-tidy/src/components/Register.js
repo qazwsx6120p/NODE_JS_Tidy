@@ -135,7 +135,6 @@ const Register = () => {
           type="file"
           id="photo"
           name="photo"
-          value={member.photo}
           onChange={handlePhoto}
         />
       </div>
