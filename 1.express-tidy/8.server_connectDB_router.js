@@ -36,6 +36,17 @@ app.use(express.urlencoded({ extended: true }));
 // 要讓 express 認得 req 裡 json
 app.use(express.json());
 
+
+// --------使用靜態網址--------
+
+// 在public檔案夾建立members檔案夾
+app.use(
+  '/images/members',
+  express.static(path.join(__dirname, 'public', 'members'))
+);
+// http://localhost:3001/images/members  --> public/members
+// http://localhost:3001/images/members/1655003608497.jpg
+
 //======== ** Router **========
 
 //1.stockRouter

@@ -1,4 +1,4 @@
-//=============================== Require ===================================
+/////////////////////////////// Require ///////////////////////////////
 
 // ------------- 引用express和使用router -------------
 
@@ -19,31 +19,44 @@ const pool = require('../utils/db');
 
 const bcrypt = require('bcrypt');
 
-//==================================================================
+// ------------- 引用圖片上傳套件 -------------
 
-// for image upload
-// https://www.npmjs.com/package/multer
-// npm i multer
 const multer = require('multer');
+
+// ------------- 會自動偵測路徑的 "/" 、 "\" 方向套件(內建) -------------
+
 const path = require('path');
+
+////////////////////////////////////////////////////////////////////
+
+//=================== 處理後端上傳圖片 ===================
+
 // 圖片上傳需要地方放，在 public 裡，建立了 uploads 檔案夾
-// 設定圖片儲存的位置
+
+// ------------------ 1.設定圖片儲存的位置 ------------------
 const storage = multer.diskStorage({
   // 設定儲存的目的地 （檔案夾）
+  // 以下寫法為套件規定
   destination: function (req, file, cb) {
+    // 有兩個參數，第一個為錯誤，第二個為資料位置(去找創建放圖片的位置)
     cb(null, path.join(__dirname, '..', 'public', 'members'));
   },
-  // 重新命名使用者上傳的圖片名稱
+  // ------------------ 2.重新命名使用者上傳的圖片名稱 ------------------
   filename: function (req, file, cb) {
     // 剛學習一個新的套件，可以把拿到的物件或變數印出來看看
     // 看看裡面有沒有放什麼有用的東西
     // console.log('multer filename', file);
     // 通常我們會選擇重新命名使用者上傳的圖片名稱
     // 以避免重複的檔名或是惡意名稱，也比較好管理
+
+    // 將送來的檔案切開，將最後一個拿出來 123.jpg(拿.jpg)
     let ext = file.originalname.split('.').pop();
+    // 創建新檔名，這邊是使用時間+原有檔案格式來命名
     let newFilename = `${Date.now()}.${ext}`;
+    // 有兩個參數，第一個為錯誤，第二個為新檔名
     cb(null, newFilename);
-    // {
+    // 前端送來的圖片資料
+    // { 
     //   fieldname: 'photo',
     //   originalname: 'japan04-200.jpg',
     //   encoding: '7bit',
@@ -51,10 +64,13 @@ const storage = multer.diskStorage({
     // }
   },
 });
+// 上面為設定儲存位置+檔案重新命名
+
+// ------------------ 3.將上方設定規則寫入multer ------------------
 const uploader = multer({
   // 設定儲存的位置
   storage: storage,
-  // 過濾圖片
+  // ------------------ 5.過濾圖片格式 ------------------
   // 可以想成是 photo 這個欄位的「資料驗證」
   fileFilter: function (req, file, cb) {
     if (
@@ -76,7 +92,7 @@ const uploader = multer({
   },
 });
 
-//=================== 後端驗證規則 ===================
+// =================== 後段資料驗證規則 ===================
 
 // 將存取規則的變數帶到，接收前端送來的資料中間件裡面
 const registerRules = [
@@ -94,8 +110,10 @@ const registerRules = [
 //=================== 註冊接收前端送來的資料 ===================
 
 // /api/auth/register
+// 四個參數 : 1.網址 2.圖片上傳位置 3.驗證規則 4.中間件
 router.post(
   '/register',
+  // 在中間件內設定圖片上傳位置(photo為前端送過來的欄位名稱)
   uploader.single('photo'),
   // 後端驗證規則變數
   registerRules,
@@ -179,7 +197,6 @@ router.post(
     res.json({ code: 0, result: 'OK' });
   }
 );
-
 
 // /api/auth/login
 router.post('/login', async (req, res, next) => {

@@ -12,3 +12,4 @@
 
 7.npm i express-validator (後端資料驗證套件)
 8.npm i bcrypt 或 npm i argan2 (密碼雜湊套件)
+9.npm i multer (後端處理圖片上傳的套件)
